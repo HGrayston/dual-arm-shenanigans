@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "so101-dual-arm"
+version = "0.1.0"
+description = "Dual-arm SO-101 simulation in MuJoCo: handover and cooperative manipulation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "mujoco>=3.2",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+ik = ["mink"]
+dev = ["pytest>=8", "imageio>=2.34"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
