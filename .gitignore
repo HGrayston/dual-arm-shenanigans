@@ -5,6 +5,10 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
+# secrets, if any ever get added
+.env
+.env.*
+
 # generated outputs (commit curated GIFs/videos under docs/ instead)
 out/
 *.mp4

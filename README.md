@@ -5,20 +5,24 @@ cooperative manipulation (object handover, then bimanual tasks) and, later, sim-
 leader/follower arms.
 
 > Status: **step 0, scene and tooling**. Two arms, a table and a cube load, hold pose and pass tests.
-> No manipulation behaviour yet. See the roadmap below.
+> No manipulation behaviour yet. See the roadmap below. Current state and next steps: `HANDOFF.md`.
+> Rules for anyone (human or AI) editing the repo: `AGENTS.md`.
 
 ## Quick start
 
 ```bash
-git clone dual-arm-shenanigans
-uv sync
-.venv\scripts\activate.sh
-code .
+git clone https://github.com/HGrayston/dual-arm-shenanigans
+cd dual-arm-shenanigans
+uv sync --extra dev                     # creates .venv, installs mujoco, numpy, pytest, imageio
 
-python scripts/view_scene.py            # interactive viewer
-python scripts/view_scene.py --demo     # slow jig
-pytest                                  # 7 tests
+uv run python scripts/view_scene.py            # interactive viewer
+uv run python scripts/view_scene.py --demo     # slow jig
+uv run python scripts/first_motion.py          # scratch script: viewer loop, no arm motion yet
+uv run pytest                                  # 8 tests
 ```
+
+`uv run` uses the project's `.venv` without activating it, so the same commands work on Windows, Linux and macOS.
+(macOS: the interactive viewer may need `mjpython` instead of `python`, UNVERIFIED with uv.)
 
 ## What is in the scene (AI)
 
@@ -29,12 +33,13 @@ pytest                                  # 7 tests
 | Table | Top at z = 0.40 m |
 | Object | 3 cm cube, 20 g, at the centre |
 | Start pose | Folded `READY_Q`, collision-free, 15 cm between gripper tips |
-| Cameras | `overview`, `top`, plus each arm's `wrist_cam` |
+| Cameras | `overview`, `top`, `left_wrist_cam`, `right_wrist_cam` |
+| Scene file | `assets/scene.xml` (table, floor, cube, cameras); `src/so101_dual/scene.py` fills its `{placeholders}` and attaches the arms |
 
 The all-zeros pose is **not** a safe start: both arms then reach into each other. That is why a `ready` keyframe
 exists (Backspace in the viewer resets to it).
 
-Arm placement uses MuJoCo's `MjSpec.attach`, so the upstream XML is untouched and `separation` is a parameter:
+Arm placement uses MuJoCo's `MjSpec.attach`, so the upstream XML is untouched and `arm_separation` is a parameter:
 
 ```python
 from so101_dual import load, arm_ids, ARMS
