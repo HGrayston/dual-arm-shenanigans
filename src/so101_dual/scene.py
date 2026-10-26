@@ -19,6 +19,7 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SO101_DIR = REPO_ROOT / "assets" / "so101"
 SO101_XML = SO101_DIR / "so101.xml"
+SCENE_XML = REPO_ROOT / "assets" / "scene.xml"
 
 ARMS = ("left", "right")
 JOINTS = (
@@ -33,66 +34,24 @@ JOINTS = (
 TABLE_HEIGHT = 0.40  # m, top surface of the table
 CUBE_HALF = 0.015  # m, 3 cm cube
 
-_SCENE_XML = """
-<mujoco model="so101_dual_scene">
-  <option integrator="implicitfast" timestep="0.005" cone="elliptic"
-          iterations="10" ls_iterations="20" impratio="10"/>
-  <compiler angle="radian" autolimits="true"/>
-
-  <visual>
-    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
-    <rgba haze="0.15 0.25 0.35 1"/>
-    <global azimuth="90" elevation="-25" offwidth="1280" offheight="720"/>
-    <scale contactwidth="0.1" contactheight="0.05" forcewidth="0.02"/>
-  </visual>
-
-  <asset>
-    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0"
-             width="512" height="3072"/>
-    <texture type="2d" name="groundplane" builtin="checker" mark="edge"
-             rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8"
-             width="300" height="300"/>
-    <material name="groundplane" texture="groundplane" texuniform="true"
-              texrepeat="5 5" reflectance="0.2"/>
-    <material name="table" rgba="0.72 0.60 0.45 1"/>
-    <material name="cube" rgba="0.85 0.15 0.15 1"/>
-  </asset>
-
-  <worldbody>
-    <light pos="0 0 3.5" dir="0 0 -1" directional="true"/>
-    <geom name="floor" type="plane" size="0 0 0.05" material="groundplane"/>
-
-    <!-- table: top surface at z = {table_h} -->
-    <geom name="table_top" type="box" size="0.60 0.35 0.02"
-          pos="0 0 {table_top_z}" material="table" friction="1 0.005 0.0001"/>
-    <geom name="table_leg_1" type="box" size="0.02 0.02 {leg_half}" pos=" 0.56  0.31 {leg_z}" material="table"/>
-    <geom name="table_leg_2" type="box" size="0.02 0.02 {leg_half}" pos="-0.56  0.31 {leg_z}" material="table"/>
-    <geom name="table_leg_3" type="box" size="0.02 0.02 {leg_half}" pos=" 0.56 -0.31 {leg_z}" material="table"/>
-    <geom name="table_leg_4" type="box" size="0.02 0.02 {leg_half}" pos="-0.56 -0.31 {leg_z}" material="table"/>
-
-    <camera name="overview" pos="0 -1.05 1.05" xyaxes="1 0 0 0 0.62 0.78"/>
-    <camera name="top" pos="0 0 1.6" xyaxes="1 0 0 0 1 0"/>
-  </worldbody>
-</mujoco>
-"""
-
 
 def _scene_xml(with_cube: bool) -> str:
-    xml = _SCENE_XML.format(
+    xml = SCENE_XML.read_text(encoding="utf-8").format(
         table_h=TABLE_HEIGHT,
         table_top_z=TABLE_HEIGHT - 0.02,
         leg_half=(TABLE_HEIGHT - 0.04) / 2,
         leg_z=(TABLE_HEIGHT - 0.04) / 2,
+        cube_z=TABLE_HEIGHT + CUBE_HALF,
+        cube_half=CUBE_HALF,
     )
+    start_marker = "    <!-- OPTIONAL_CUBE_START -->\n"
+    end_marker = "    <!-- OPTIONAL_CUBE_END -->\n"
     if with_cube:
-        cube = f"""
-    <body name="cube" pos="0 0 {TABLE_HEIGHT + CUBE_HALF}">
-      <freejoint name="cube_free"/>
-      <geom name="cube" type="box" size="{CUBE_HALF} {CUBE_HALF} {CUBE_HALF}"
-            mass="0.02" material="cube" condim="4" friction="1 0.005 0.0001"/>
-    </body>
-  </worldbody>"""
-        xml = xml.replace("</worldbody>", cube, 1)
+        xml = xml.replace(start_marker, "").replace(end_marker, "")
+    else:
+        start = xml.index(start_marker)
+        end = xml.index(end_marker, start) + len(end_marker)
+        xml = xml[:start] + xml[end:]
     return xml
 
 

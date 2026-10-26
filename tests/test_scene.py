@@ -20,6 +20,11 @@ def test_scene_has_two_six_dof_arms(sim):
         assert ids.gripper_site >= 0
 
 
+def test_scene_can_be_built_without_cube():
+    model, _ = load(with_cube=False)
+    assert mj.mj_name2id(model, mj.mjtObj.mjOBJ_BODY, "cube") == -1
+
+
 def test_unknown_arm_rejected(sim):
     model, _ = sim
     with pytest.raises(ValueError):

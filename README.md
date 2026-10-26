@@ -10,19 +10,17 @@ leader/follower arms.
 ## Quick start
 
 ```bash
-git clone <this repo> && cd so101-dual-arm
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+git clone dual-arm-shenanigans
+uv sync
+.venv\scripts\activate.sh
+code .
 
 python scripts/view_scene.py            # interactive viewer
-python scripts/view_scene.py --demo     # arms move, shows control works
+python scripts/view_scene.py --demo     # slow jig
 pytest                                  # 7 tests
 ```
 
-On macOS the interactive viewer must be started with `mjpython scripts/view_scene.py`.
-Run from a clone: the model files live in `assets/`, outside the Python package.
-
-## What is in the scene
+## What is in the scene (AI)
 
 | Item | Detail |
 |---|---|
