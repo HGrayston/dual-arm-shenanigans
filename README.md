@@ -5,7 +5,8 @@ cooperative manipulation (object handover, then bimanual tasks) and, later, sim-
 leader/follower arms.
 
 > Status: **step 0, scene and tooling**. Two arms, a table and a cube load, hold pose and pass tests.
-> No manipulation behaviour yet. See the roadmap below. Current state and next steps: `HANDOFF.md`.
+> Showcase demos of handover, cooperative lifting and stereo vision are in place (see below). Current state and next
+> steps: `HANDOFF.md`.
 > Rules for anyone (human or AI) editing the repo: `AGENTS.md`.
 
 ## Quick start
@@ -47,6 +48,27 @@ model, data = load(arm_separation=0.50)
 left = arm_ids(model, "left")   # actuator / qpos / dof indices, ctrlrange, gripper site
 data.ctrl[left.actuator] = [...]  # 6 joint targets in rad: pan, lift, elbow, wrist_flex, wrist_roll, gripper
 ```
+
+## Showcase demos
+
+Three runnable demos of how the arms and cameras interact in code. Each opens the viewer, with the two stereo camera
+views in the bottom corners, and prints what it's doing and why.
+
+```bash
+uv run --extra dev python scripts/demo_handover.py   # left arm picks up a ball and hands it to the right arm
+uv run --extra dev python scripts/demo_beam.py       # both arms lift a beam, kept level by the cameras
+uv run --extra dev python scripts/demo_beam.py --no-feedback   # same fault, cameras not used to fix it
+uv run --extra dev python scripts/demo_stereo.py     # live 3D tracking of a bouncing ball
+uv run --extra dev python scripts/demo_stereo.py --report out/stereo   # depth map, 3D point cloud, accuracy numbers
+```
+
+`--trials N` (handover, beam) runs N randomised attempts without a window and reports the results. `--video FILE`
+(all three) records to a file instead. `.gif` works as is; `.mp4` also needs `--with imageio-ffmpeg` after `uv run`.
+
+The building blocks are `src/so101_dual/control.py` (IK, smooth Cartesian moves, force-feedback closing) and
+`src/so101_dual/vision.py` (colour detection, circle fitting, triangulation). The arms get object positions from the
+rendered camera images, not from the simulator. Limits: colours are easy to pick out here, and simulated cameras have no
+noise, distortion or calibration error, so real-world accuracy will be worse.
 
 ## Roadmap
 

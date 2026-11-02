@@ -9,13 +9,16 @@ behaviour code himself.
 
 ## Commands (run from the repo root)
 - Install: `uv sync --extra dev` (Python >= 3.10, `uv.lock` is committed; add the IK extra later with `--extra ik`)
-- Test: `uv run pytest` (expected: 8 passed)
+- Test: `uv run pytest` (expected: 12 passed)
 - View: `uv run python scripts/view_scene.py [--demo] [--separation 0.5] [--no-cube]` (needs a display)
 - Still image: `uv run python scripts/view_scene.py --render out/overview.png` (needs EGL or OSMesa, may fail headless)
 - Scratch motion script (owner's): `uv run python scripts/first_motion.py`
+- Demos: `uv run --extra dev python scripts/demo_handover.py`, `demo_beam.py`, `demo_stereo.py` (see `README.md`)
 
 ## Structure
 - `src/so101_dual/scene.py`: `load()`, `build_spec()`, `arm_ids()`, `READY_Q`, `ARMS`, `JOINTS`. All scene logic.
+- `src/so101_dual/control.py`: `build_demo()`, `solve_ik()`, `Sim` (moves, force-feedback closing). Used by the demos.
+- `src/so101_dual/vision.py`: `StereoRig`, colour and circle detection, triangulation, `Display`. Used by the demos.
 - `assets/scene.xml`: table, floor, cube, cameras. Read by `scene.py` and filled with `str.format`.
 - `assets/so101/`: vendored robot model (MuJoCo Menagerie `robotstudio_so101`, Apache-2.0).
 - `scripts/`: runnable scripts. `tests/test_scene.py`: pytest. `README.md`: overview and roadmap.
@@ -35,6 +38,9 @@ behaviour code himself.
 - `load(ready=False)` leaves `data.ctrl` at zero, so the arms drive into each other. Set `ctrl` yourself.
 - The package finds `assets/` relative to the repo, so it works from a clone or `uv sync`, not from a built wheel.
 - On macOS the interactive viewer may need `mjpython`.
+- Create only one `StereoRig` per process where possible: with EGL, a second model's renderer gave wrong images once
+  an earlier one was gone. Reuse the rig and reset with `mj_resetDataKeyframe` (the `--trials` loops do this).
+- `build_demo()` sets `impratio = 100`; without it, held objects creep out of the jaws.
 
 ## Do not change without the owner's approval
 - Anything under `assets/so101/` (vendored upstream, must stay unmodified with its `LICENSE`).

@@ -15,7 +15,7 @@ Project rules and commands live in `AGENTS.md`; if the two disagree, `AGENTS.md`
 
 ## 2. CURRENT STATUS
 Done and working (verified by running on a fresh clone):
-- `uv lock --check` ok; `uv run --extra dev pytest` gives 8 passed.
+- `uv lock --check` ok; `uv run --extra dev pytest` gives 12 passed (8 scene, 4 demo building blocks).
 - `load()` compiles the scene: 18 bodies, 12 actuators, keyframe `ready`, 0 contacts at start, cameras `overview`,
   `top`, `left_wrist_cam`, `right_wrist_cam`. `load(with_cube=False)` gives `nq == 12`.
 - Position actuators track targets (test: left `shoulder_pan` reaches 0.5 rad within 0.03).
@@ -37,6 +37,14 @@ Known issues:
 - `src/so101_dual/scene.py:19`: `REPO_ROOT = parents[2]` only works from a clone, not an installed wheel.
 - `src/so101_dual/scene.py:86`: `READY_Q` wrist_flex is 1.6 of a 1.658 rad limit; may bite once IK is added.
 - `scripts/first_motion.py:3`: unused imports `arm_ids`, `READY_Q` (expected, until the script is finished).
+
+## 2b. SHOWCASE DEMOS (added 2026-11-02, at the owner's request)
+- `scripts/demo_handover.py`, `demo_beam.py`, `demo_stereo.py`, built on `control.py` and `vision.py`. See `README.md`.
+- This covers roadmap steps 1 and 2 in scripted, demo form. The owner still wants to write his own behaviours, and
+  `scripts/first_motion.py` is untouched.
+- Tested headless on Linux with software rendering. The viewer path was smoke-tested under Xvfb. Windows is UNVERIFIED.
+- Known limits: the beam slips about 1.5 cm in the jaws during a 13 cm lift; the ball lands about 2 cm from its target
+  because it rolls when released.
 
 ## 3. NEXT STEPS (in order)
 1. Owner finishes `scripts/first_motion.py`: `left = arm_ids(model, "left")`, then inside the loop write a target
